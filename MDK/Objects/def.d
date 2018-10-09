@@ -1,0 +1,9 @@
+.\objects\def.o: ..\Middlewares\Lwip\src\core\def.c
+.\objects\def.o: ..\Middlewares\Lwip\src\include\lwip/opt.h
+.\objects\def.o: ..\Middlewares\Lwip\system\lwipopts.h
+.\objects\def.o: ..\Middlewares\Lwip\src\include\lwip/debug.h
+.\objects\def.o: ..\Middlewares\Lwip\src\include\lwip/arch.h
+.\objects\def.o: ..\Middlewares\Lwip\system\arch/cc.h
+.\objects\def.o: ..\Middlewares\Lwip\system\arch/cpu.h
+.\objects\def.o: ..\Middlewares\Lwip\src\include\lwip/opt.h
+.\objects\def.o: ..\Middlewares\Lwip\src\include\lwip/def.h

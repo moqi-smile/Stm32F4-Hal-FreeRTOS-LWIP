@@ -1,0 +1,14 @@
+.\objects\slipif.o: ..\Middlewares\Lwip\src\netif\slipif.c
+.\objects\slipif.o: ..\Middlewares\Lwip\src\include\netif/slipif.h
+.\objects\slipif.o: ..\Middlewares\Lwip\src\include\lwip/opt.h
+.\objects\slipif.o: ..\Middlewares\Lwip\system\lwipopts.h
+.\objects\slipif.o: ..\Middlewares\Lwip\src\include\lwip/debug.h
+.\objects\slipif.o: ..\Middlewares\Lwip\src\include\lwip/arch.h
+.\objects\slipif.o: ..\Middlewares\Lwip\system\arch/cc.h
+.\objects\slipif.o: ..\Middlewares\Lwip\system\arch/cpu.h
+.\objects\slipif.o: ..\Middlewares\Lwip\src\include\lwip/opt.h
+.\objects\slipif.o: ..\Middlewares\Lwip\src\include\lwip/netif.h
+.\objects\slipif.o: ..\Middlewares\Lwip\src\include\lwip/err.h
+.\objects\slipif.o: ..\Middlewares\Lwip\src\include\ipv4\lwip/ip_addr.h
+.\objects\slipif.o: ..\Middlewares\Lwip\src\include\lwip/def.h
+.\objects\slipif.o: ..\Middlewares\Lwip\src\include\lwip/pbuf.h

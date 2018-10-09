@@ -58,7 +58,6 @@ void Application_Main (void)
 
 	LwipApplicationInit();
 	MqttApplicationInit();
-	HttpApplicationInit();
 
 	/* 启动调度，开始执行任务 */
 	vTaskStartScheduler();

@@ -51,7 +51,7 @@ int WaitForPacket(int sock,uint8_t packettype,uint8_t times);
 int MQTTMsgPublish(int sock, char *topic, char qos, char retained,uint8_t * msg,uint32_t msg_len);
 void deliverMessage(MQTTString  *TopicName,MQTTMessage *msg,MQTT_USER_MSG *mqtt_user_msg);
 int ReadPacketTimeout(int sock,uint8_t  *buf,int buflen,uint32_t timeout);
-int MQTTSubscribe(int sock,char *topic,enum QoS pos);
-int MQTTClientInit(int sock);
+int MQTTSubscribe(int sock,char *topic,enum QoS pos, uint8_t *buffer, int buflen);
+int MQTTClientInit(int sock, uint8_t *buffer, int buflen);
 
 #endif

@@ -1,0 +1,11 @@
+.\objects\inet.o: ..\Middlewares\Lwip\src\core\ipv4\inet.c
+.\objects\inet.o: ..\Middlewares\Lwip\src\include\lwip/opt.h
+.\objects\inet.o: ..\Middlewares\Lwip\system\lwipopts.h
+.\objects\inet.o: ..\Middlewares\Lwip\src\include\lwip/debug.h
+.\objects\inet.o: ..\Middlewares\Lwip\src\include\lwip/arch.h
+.\objects\inet.o: ..\Middlewares\Lwip\system\arch/cc.h
+.\objects\inet.o: ..\Middlewares\Lwip\system\arch/cpu.h
+.\objects\inet.o: ..\Middlewares\Lwip\src\include\lwip/opt.h
+.\objects\inet.o: ..\Middlewares\Lwip\src\include\ipv4\lwip/inet.h
+.\objects\inet.o: ..\Middlewares\Lwip\src\include\lwip/def.h
+.\objects\inet.o: ..\Middlewares\Lwip\src\include\ipv4\lwip/ip_addr.h

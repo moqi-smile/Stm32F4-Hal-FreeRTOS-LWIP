@@ -26,6 +26,8 @@
 
 #include "MqttClient.h"
 
+#define MQTT_BUFFERLENTH        512
+
 static TaskHandle_t xHandleTaskMqtt = NULL;
 
 static void vTaskMqtt(void *pvParameters)
@@ -36,8 +38,8 @@ static void vTaskMqtt(void *pvParameters)
 	int sessionPresent = 0;
 	int rc = 0;
 
-	uint8_t buf[300];
-	int buflen = sizeof(buf),type,ret;
+	uint8_t *buf;
+	int buflen = MQTT_BUFFERLENTH,type,ret;
 
 	fd_set readfd;
 	struct timeval tv;
@@ -56,6 +58,7 @@ static void vTaskMqtt(void *pvParameters)
 	printf ("UserName = %s\r\n", UserName);
 	printf ("UserPassword = %s\r\n", UserPassword);
 
+	buf = mymalloc(SRAMEX, MQTT_BUFFERLENTH);
 MQTT_START: 
 	//创建网络连接
 	while(1)
@@ -73,17 +76,17 @@ MQTT_START:
 
 	//登录服务器
 
-	rc = MQTTClientInit(mysock);
-	if(rc < 0)
+	rc = MQTTClientInit(mysock, buf, MQTT_BUFFERLENTH);
+	if (rc < 0)
 	{
-		goto MQTT_reconnect;	 
+		goto MQTT_reconnect;
 	}
 
 	//订阅消息
 	if(sessionPresent != 1)
 	{
 		//订阅消息
-		rc = MQTTSubscribe(mysock, SubscribeMsg, QOS2);
+		rc = MQTTSubscribe(mysock, SubscribeMsg, QOS2, buf, MQTT_BUFFERLENTH);
 		if(rc < 0)
 		{
 			//重连服务器
@@ -138,7 +141,6 @@ MQTT_START:
 				//获取当前滴答，作为心跳包起始时间
 				curtick = xTaskGetTickCount();				
 			}
-
 		}
 
 		//这里主要目的是定时向服务器发送PING保活命令

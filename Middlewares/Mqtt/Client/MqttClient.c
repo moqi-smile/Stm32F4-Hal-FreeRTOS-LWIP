@@ -14,12 +14,12 @@
 //定义用户消息结构体
 MQTT_USER_MSG  mqtt_user_msg;
 
-int MQTTClientInit(int sock)
+int MQTTClientInit(int sock, uint8_t *buffer, int buflen)
 {
 	MQTTPacket_connectData connectData = MQTTPacket_connectData_initializer;
-	uint8_t *buffer = NULL;
-	int buflen = 516;
+
 	int len = 0;
+	int rc = 0;
 	uint8_t sessionPresent,connack_rc;
 
 	fd_set readfd;
@@ -27,10 +27,10 @@ int MQTTClientInit(int sock)
 	tv.tv_sec = 2;
 	tv.tv_usec = 0;
 
-	buffer = mymalloc(SRAMEX, buflen);
 	if (buffer == NULL)
 	{
-		return -6;
+		rc = -6;
+		goto exit;
 	}
 	memset(buffer, 0, buflen);
 
@@ -56,26 +56,42 @@ int MQTTClientInit(int sock)
 	len = MQTTSerialize_connect(buffer, buflen, &connectData);
 	//发送TCP数据
 	if(transport_sendPacketBuffer(buffer, len) < 0)
-		return -1;
+	{
+		rc = -1;
+		goto exit;
+	}
 
 	//等待可读事件--等待超时
 	if(select(sock+1,&readfd,NULL,NULL,&tv) == 0)
-		return -2;
+	{
+		rc = -2;
+		goto exit;
+	}
 	//有可读事件--没有可读事件
 	if(FD_ISSET(sock,&readfd) == 0)
-		return -3;
+	{
+		rc = -3;
+		goto exit;
+	}
 
 	if(MQTTPacket_read(buffer, buflen, transport_getdata) != CONNACK)
-		return -4;	
+		rc = -4;	
 	//拆解连接回应包
 	if (MQTTDeserialize_connack(&sessionPresent, &connack_rc, buffer, buflen) != 1 || connack_rc != 0)
-		return -5;
+	{
+		rc = -5;
+		goto exit;
+	}
 
-	myfree (SRAMEX, buffer);
 	if(sessionPresent == 1)
-		return 1;//不需要重新订阅--服务器已经记住了客户端的状态
+	{
+		rc = 1;//不需要重新订阅--服务器已经记住了客户端的状态
+		goto exit;
+	}
 	else 
-		return 0;//需要重新订阅
+		rc = 0;//需要重新订阅
+	exit:
+	return rc;//需要重新订阅
 }
 
 
@@ -88,24 +104,23 @@ int MQTTClientInit(int sock)
 ** 出口参数: >=0:发送成功 <0:发送失败
 ** 备    注: 
 ************************************************************************/
-int MQTTSubscribe(int sock,char *topic,enum QoS pos)
+int MQTTSubscribe(int sock,char *topic,enum QoS pos, uint8_t *buffer, int buflen)
 {
 	static uint32_t PacketID = 0;
 	uint16_t packetidbk = 0;
 	int conutbk = 0;
-	uint8_t *buffer = NULL;
-	int buflen = 300;
 	MQTTString topicString = MQTTString_initializer;  
 	int len;
 	int req_qos,qosbk;
+	int rc = 0;
 
 	fd_set readfd;
 	struct timeval tv;
 
-	buffer = mymalloc(SRAMEX, buflen);
 	if (buffer == NULL)
 	{
-		return -7;
+		rc = -7;
+		goto exit;
 	}
 	memset(buffer, 0, buflen);
 
@@ -124,31 +139,50 @@ int MQTTSubscribe(int sock,char *topic,enum QoS pos)
 	len = MQTTSerialize_subscribe(buffer, buflen, 0, PacketID++, 1, &topicString, &req_qos);
 	//发送TCP数据
 	if(transport_sendPacketBuffer(buffer, len) < 0)
-		return -1;
+	{
+		rc = -1;
+		goto exit;
+	}
 
 	//等待可读事件--等待超时
 	if(select(sock+1,&readfd,NULL,NULL,&tv) == 0)
-		return -2;
-
+	{
+		rc = -2;
+		goto exit;
+	}
 	//有可读事件--没有可读事件
 	if(FD_ISSET(sock,&readfd) == 0)
-		return -3;
+	{
+		rc = -3;
+		goto exit;
+	}
 
 	//等待订阅返回--未收到订阅返回
 	if(MQTTPacket_read(buffer, buflen, transport_getdata) != SUBACK)
-		return -4;	
+	{
+		rc = -4;
+		goto exit;
+	}
 
 	//拆订阅回应包
 	if(MQTTDeserialize_suback(&packetidbk,1, &conutbk, &qosbk, buffer, buflen) != 1)
-		return -5;
+	{
+		rc = -5;
+		goto exit;
+	}
+
 
 	//检测返回数据的正确性
 	if((qosbk == 0x80)||(packetidbk != (PacketID-1)))
-		return -6;
+	{
+		rc = -6;
+		goto exit;
+	}
 
-	myfree (SRAMEX, buffer);
+	exit:
+
 	//订阅成功
-	return 0;
+	return rc;
 }
 
 /************************************************************************
@@ -338,11 +372,13 @@ void mqtt_pktype_ctl(uint8_t  packtype,uint8_t  *buf,uint32_t buflen)
 ************************************************************************/
 int my_mqtt_send_pingreq(int sock)
 {
+	int rc = 0;
 	int len;
 	uint8_t buf[200];
 	int buflen = sizeof(buf);	 
 	fd_set readfd;
 	struct timeval tv;
+
 	tv.tv_sec = 5;
 	tv.tv_usec = 0;
 
@@ -354,16 +390,26 @@ int my_mqtt_send_pingreq(int sock)
 
 	//等待可读事件
 	if(select(sock+1,&readfd,NULL,NULL,&tv) == 0)
-		return -1;
+	{
+		rc = -1;
+		goto exit;
+	}
 
 	//有可读事件
 	if(FD_ISSET(sock,&readfd) == 0)
-		return -2;
+	{
+		rc =  -2;
+		goto exit;
+	}
 
 	if(MQTTPacket_read(buf, buflen, transport_getdata) != PINGRESP)
-		return -3;
+	{
+		rc = -3;
+		goto exit;
+	}
 
-	return 0;
+	exit:
+	return rc;
 
 }
 
